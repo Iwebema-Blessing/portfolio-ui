@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------
+   Theme tokens. Light is the default. .dark flips the same names,
+   so every component only ever refers to paper / mist / ink etc.
+   --------------------------------------------------------------- */
+@layer base {
+  :root {
+    --paper: 255 255 255;
+    --mist: 243 244 246;
+    --line: 226 228 231;
+    --graphite: 106 112 120;
+    --ink: 17 18 20;
+
+    --glow: 17 18 20;
+    --glow-strength: 0.13;
+    --mesh-a: 0 0 0;
+    --mesh-b: 154 160 166;
+    --shell-pad: clamp(1.15rem, 4vw, 3.25rem);
+  }
+
+  .dark {
+    --paper: 0 0 0;
+    --mist: 20 20 22;
+    --line: 38 38 42;
+    --graphite: 150 156 163;
+    --ink: 244 245 246;
+
+    --glow: 255 255 255;
+    --glow-strength: 0.22;
+    --mesh-a: 255 255 255;
+    --mesh-b: 110 116 124;
+  }
+
+  * {
+    border-color: rgb(var(--line));
+  }
+
+  html,
+  body {
+    background-color: rgb(var(--paper));
+    color: rgb(var(--ink));
+  }
+
+  body {
+    @apply font-sans text-base antialiased;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+    font-variation-settings: 'wdth' 92;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: rgb(var(--ink));
+    color: rgb(var(--paper));
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--ink));
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* Quiet, consistent scrollbars for the horizontal rails. */
+  .rail::-webkit-scrollbar {
+    height: 6px;
+  }
+  .rail::-webkit-scrollbar-thumb {
+    background: rgb(var(--line));
+    border-radius: 999px;
+  }
+  .rail::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  .shell {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: var(--shell-pad);
+  }
+
+  /* Any surface that reads as a card or a button gets the glowing edge. */
+  .glow-edge {
+    position: relative;
+    isolation: isolate;
+    transition:
+      transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+      box-shadow 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+      border-color 0.45s ease;
+  }
+
+  .glow-edge::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      140deg,
+      rgb(var(--glow) / 0.55),
+      rgb(var(--glow) / 0) 42%,
+      rgb(var(--glow) / 0) 62%,
+      rgb(var(--glow) / 0.35)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .glow-edge:hover::after,
+  .glow-edge:focus-visible::after {
+    opacity: 1;
+  }
+
+  .glow-edge:hover,
+  .glow-edge:focus-visible {
+    box-shadow:
+      0 0 0 1px rgb(var(--glow) / 0.08),
+      0 18px 50px -24px rgb(var(--glow) / var(--glow-strength));
+  }
+
+  /* The site preview that scrolls itself while the pointer is over it. */
+  .shot-frame {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shot-frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transform: translate3d(0, 0, 0);
+    transition: transform 7s cubic-bezier(0.33, 0, 0.25, 1);
+  }
+
+  .shot-frame:hover img,
+  .shot-frame:focus-within img {
+    transform: translate3d(0, calc(-100% + var(--frame-h, 14rem)), 0);
+  }
+
+  .link-quiet {
+    color: rgb(var(--graphite));
+    transition: color 0.25s ease;
+  }
+  .link-quiet:hover {
+    color: rgb(var(--ink));
+  }
+
+  .btn {
+    @apply glow-edge inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-base font-medium;
+  }
+  .btn-solid {
+    background: rgb(var(--ink));
+    color: rgb(var(--paper));
+  }
+  .btn-solid:hover {
+    transform: translateY(-2px);
+  }
+  .btn-ghost {
+    border: 1px solid rgb(var(--line));
+    background: rgb(var(--paper) / 0.6);
+    backdrop-filter: blur(8px);
+  }
+  .btn-ghost:hover {
+    transform: translateY(-2px);
+    border-color: rgb(var(--ink) / 0.35);
+  }
+
+  .field {
+    @apply w-full rounded-2xl border bg-transparent px-4 py-3 text-base;
+    border-color: rgb(var(--line));
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .field:focus {
+    outline: none;
+    border-color: rgb(var(--ink) / 0.55);
+    box-shadow: 0 0 0 4px rgb(var(--glow) / 0.07);
+  }
+
+  .hairline {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--line)) 12%,
+      rgb(var(--line)) 88%,
+      transparent
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .shot-frame:hover img {
+    transform: none;
+  }
+}
